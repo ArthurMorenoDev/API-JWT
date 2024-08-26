@@ -19,8 +19,9 @@ router.post('/cadastro', async (req, res) => {
 
     const userDB = await prisma.user.create({
       data: {
-        email: user.email,
         name: user.name,
+        email: user.email,
+        departament: user.departament,
         password: hashPassword,
       },
     })

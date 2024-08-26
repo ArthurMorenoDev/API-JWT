@@ -65,6 +65,3 @@ router.post('/login', async (req, res) => {
 
 export default router
 
-// rodolfo
-// uwa0VeCytGp4uQ9t
-//

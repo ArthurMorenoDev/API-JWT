@@ -32,7 +32,6 @@ router.post('/cadastro', async (req, res) => {
 })
 
 //lOGIN
-
 router.post('/login', async (req, res) => {
   try {
     const userInfo = req.body
@@ -64,4 +63,3 @@ router.post('/login', async (req, res) => {
 })
 
 export default router
-

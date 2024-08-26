@@ -14,6 +14,7 @@ router.get('/listar-usuarios', async (req, res) => {
     res.status(500).json({ message: 'Falha no servidor' })
   }
 })
+
 router.get('/dashboard', async (req, res) => {
   try {
     const users = await prisma.user.findMany()

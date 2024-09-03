@@ -26,4 +26,15 @@ router.get('/dashboard', async (req, res) => {
   }
 })
 
+router.get('/listar-dados', async (req, res) => {
+  try {
+    const data = await prisma.data.findMany()
+
+    res.status(200).json({ data })
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ message: 'Falha no servidor' })
+  }
+})
+
 export default router

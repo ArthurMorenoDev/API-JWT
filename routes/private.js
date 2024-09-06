@@ -1,5 +1,6 @@
 import express from 'express'
 import { PrismaClient } from '@prisma/client'
+// import { data } from "autoprefixer"
 
 const router = express.Router()
 const prisma = new PrismaClient()
@@ -36,5 +37,27 @@ router.get('/listar-dados', async (req, res) => {
     res.status(500).json({ message: 'Falha no servidor' })
   }
 })
+
+router.post('/inserir-dados', async (req, res) => {
+  try {
+    const data = req.body
+
+    
+
+    const dataDB = await prisma.data.create({
+      data: {
+        acertos: data.acertos,
+        banco: data.banco,
+        comissao: data.comissao,
+        proposta: data.proposta,
+      }
+    })
+    res.status(201).json(dataDB)
+  } catch (err) {
+    res.status(500).json({ message: 'Erro no Servidor, tente novamente' })
+  }
+})
+
+
 
 export default router

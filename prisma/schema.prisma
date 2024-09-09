@@ -21,6 +21,9 @@ model User {
   password    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+   // Relacionamento com tabulacao
+  tabulacoes  tabulacao[] @relation("UserTabulacoes")
 }
 
 model data {
@@ -30,4 +33,15 @@ model data {
   banco       String   
   comissao    Float 
   createdAt   DateTime @default(now())
+}
+
+model tabulacao {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int      // Chave estrangeira para User
+  usuario     User     @relation("UserTabulacoes", fields: [usuarioId], references: [id])
+  data DateTime 
+  codigo String
+  descricao   String 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

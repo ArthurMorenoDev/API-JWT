@@ -58,7 +58,7 @@ router.post('/inserir-dados', async (req, res) => {
   }
 })
 
-router.get('/listar-tabulacoes', async (req, res) => {
+router.get('/tabulacao', async (req, res) => {
   try {
     const data = await prisma.tabulacao.findMany()
 

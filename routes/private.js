@@ -69,29 +69,95 @@ router.get('/tabulacao', async (req, res) => {
   }
 })
 
-// router.post('/inserir-tabulacao', async (req, res) => {
-//   try {
-//     const data = req.body
+router.get('/tabulacao/:id', async (req, res) => {
+  const { id } = req.params; // Obtém o ID da URL
 
-    
+  try {
+    // Encontra o registro na tabela tabulacao com base no ID
+    const data = await prisma.tabulacao.findUnique({
+      where: { id: parseInt(id) }, // Converte o ID para número, pois o Prisma espera um número para buscas por ID
+    });
 
-//     const dataDB = await prisma.tabulacao.create({
-//       data: {
-//         data: data.data,
-//         descricao: data.descricao,
-//         codigo: data.codigo,
-//         usuarioId: data.usuarioId
-//       }
-//     })
-//     res.status(201).json(dataDB)
-//   } catch (err) {
-//     res.status(500).json({ message: 'Erro no Servidor, tente novamente' })
-//   }
-// })
+    if (data) {
+      res.status(200).json({ data }); // Se encontrado, retorna o dado
+    } else {
+      res.status(404).json({ message: 'Registro não encontrado' }); // Se não encontrado, retorna 404
+    }
+  } catch (err) {
+    console.log(err); // Loga o erro para depuração
+    res.status(500).json({ message: 'Falha no servidor' }); // Retorna um erro genérico de servidor
+  }
+});
 
+router.post('/tabulacao', async (req, res) => {
+  const { usuarioId, data, codigo, descricao } = req.body;
 
+  try {
+    const novaTabulacao = await prisma.tabulacao.create({
+      data: {
+        usuarioId,
+        data: new Date(data), // Certifique-se de que a data está no formato ISO
+        codigo,
+        descricao
+      }
+    });
 
+    res.status(201).json(novaTabulacao);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao criar a tabulação' });
+  }
+});
 
+router.delete('/tabulacao/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const tabulacao = await prisma.tabulacao.delete({
+      where: { id: parseInt(id, 10) },
+    });
+
+    res.json({ message: 'Tabulação deletada com sucesso', tabulacao });
+
+  } catch (error) {
+    if (error.code === 'P2025') {
+      // P2025 é o código de erro do Prisma para "Registro não encontrado"
+      res.status(404).json({ error: 'Tabulação não encontrada' });
+    } else {
+      console.error(error);
+      res.status(500).json({ error: 'Erro ao deletar a tabulação' });
+    }
+  }
+});
+
+router.patch('/tabulacao/:id', async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body; // Supondo que os dados a serem atualizados venham no corpo da requisição
+
+  try {
+    // Valida se o corpo da requisição contém algum dado para atualização
+    if (!updateData || Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'Nenhum dado fornecido para atualização' });
+    }
+
+    // Atualiza a tabulação com os dados fornecidos
+    const updatedTabulacao = await prisma.tabulacao.update({
+      where: { id: parseInt(id, 10) },
+      data: updateData,
+    });
+
+    res.json({ message: 'Tabulação atualizada com sucesso', tabulacao: updatedTabulacao });
+
+  } catch (error) {
+    if (error.code === 'P2025') {
+      // P2025 é o código de erro do Prisma para "Registro não encontrado"
+      res.status(404).json({ error: 'Tabulação não encontrada' });
+    } else {
+      console.error(error);
+      res.status(500).json({ error: 'Erro ao atualizar a tabulação' });
+    }
+  }
+});
 
 
 export default router

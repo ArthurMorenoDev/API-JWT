@@ -58,6 +58,40 @@ router.post('/inserir-dados', async (req, res) => {
   }
 })
 
+router.get('/listar-tabulacoes', async (req, res) => {
+  try {
+    const data = await prisma.tabulacao.findMany()
+
+    res.status(200).json({ data })
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ message: 'Falha no servidor' })
+  }
+})
+
+// router.post('/inserir-tabulacao', async (req, res) => {
+//   try {
+//     const data = req.body
+
+    
+
+//     const dataDB = await prisma.tabulacao.create({
+//       data: {
+//         data: data.data,
+//         descricao: data.descricao,
+//         codigo: data.codigo,
+//         usuarioId: data.usuarioId
+//       }
+//     })
+//     res.status(201).json(dataDB)
+//   } catch (err) {
+//     res.status(500).json({ message: 'Erro no Servidor, tente novamente' })
+//   }
+// })
+
+
+
+
 
 
 export default router

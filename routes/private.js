@@ -132,7 +132,7 @@ router.delete('/tabulacao/:id', async (req, res) => {
 
 router.patch('/tabulacao/:id', async (req, res) => {
   const { id } = req.params;
-  const updateData = req.body; // Supondo que os dados a serem atualizados venham no corpo da requisição
+  const updateData = req.body; 
 
   try {
     // Valida se o corpo da requisição contém algum dado para atualização

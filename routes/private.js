@@ -160,4 +160,15 @@ router.patch('/tabulacao/:id', async (req, res) => {
 });
 
 
+router.get('/reembolso', async (req, res) => {
+  try {
+    const data = await prisma.reembolso.findMany()
+
+    res.status(200).json({ data })
+  } catch (err) {
+    console.log(err)
+    res.status(500).json({ message: 'Falha no servidor' })
+  }
+})
+
 export default router

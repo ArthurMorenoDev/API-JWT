@@ -54,9 +54,9 @@ router.post('/login', async (req, res) => {
     }
 
     // Gerar o Token JWT
-    const token = jwt.sign({ id: user.id}, JWT_SECRET, { expiresIn: '7d'})
+    const token = jwt.sign({ id: user.id}, JWT_SECRET, { expiresIn: '5m'})
 
-    res.status(200).json(token)
+    res.status(200).json({token,userId:user.id  })
   } catch (err) {
     res.status(500).json({ message: 'Erro no Servidor, tente novamente' })
   }

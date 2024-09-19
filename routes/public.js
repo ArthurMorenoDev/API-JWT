@@ -53,29 +53,33 @@ router.post('/cadastro', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const userInfo = req.body
+    const { email, password } = req.body;
 
-    // Busca o usuário no banco de dados
+    // Verifica se o email e a senha foram fornecidos
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email e senha são obrigatórios' });
+    }
+
+    // Busca o usuário no banco de dados pelo email
     const user = await prisma.user.findUnique({
-      where: { email: userInfo.email },
-    })
+      where: { email },
+    });
 
-    // Verifica se o usuário existe dentro do banco
+    // Verifica se o usuário existe
     if (!user) {
-      return res.status(404).json({ message: 'Usuário não encontrado' })
+      return res.status(404).json({ message: 'Usuário não encontrado' });
     }
 
-    // Compara a senha do banco com a que o usuário digitou
-    const isMatch = await bcrypt.compare(userInfo.password, user.password)
-
+    // Compara a senha fornecida com a senha armazenada no banco
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Senha inválida' })
+      return res.status(400).json({ message: 'Senha inválida' });
     }
 
-    // Gerar o Token JWT
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1d' })
+    // Gera o Token JWT
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1d' });
 
-    // Buscar o usuário pelo ID novamente para obter todos os detalhes
+    // Busca os detalhes completos do usuário, incluindo tabulações
     const userById = await prisma.user.findUnique({
       where: { id: user.id },
       select: {
@@ -83,14 +87,25 @@ router.post('/login', async (req, res) => {
         name: true,
         email: true,
         departament: true,
-        tabulacoes: true,
+        tabulacoes: true, // Assumindo que a tabela de tabulações tem uma relação com o usuário
       },
-    })
+    });
 
-    res.status(200).json({ token, user: userById })
+    // Envia os dados de forma estruturada para o frontend, junto com o token
+    return res.status(200).json({
+      token, // Token JWT
+      user: {
+        id: userById.id,
+        name: userById.name,
+        email: userById.email,
+        departament: userById.departament,
+        tabulacoes: userById.tabulacoes, // Inclui as tabulações
+      },
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Erro no Servidor, tente novamente' })
+    console.error('Erro no login:', err);
+    return res.status(500).json({ message: 'Erro no Servidor, tente novamente' });
   }
-})
+});
 
 export default router

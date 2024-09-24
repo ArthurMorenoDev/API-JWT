@@ -69,19 +69,39 @@ router.get('/tabulacao', async (req, res) => {
   }
 })
 
-router.get('/tabulacao/:id', async (req, res) => {
+router.get('/tabulacao/id/:id', async (req, res) => {
   const { id } = req.params; // Obtém o ID da URL
 
   try {
-    // Encontra o registro na tabela tabulacao com base no ID
+    // Encontra o registro na tabela tabulacao com base no ID da tabulação
     const data = await prisma.tabulacao.findUnique({
-      where: { id: parseInt(id) }, // Converte o ID para número, pois o Prisma espera um número para buscas por ID
+      where: { id: parseInt(id) }, // Converte o ID para número
     });
 
     if (data) {
       res.status(200).json({ data }); // Se encontrado, retorna o dado
     } else {
-      res.status(404).json({ message: 'Registro não encontrado' }); // Se não encontrado, retorna 404
+      res.status(404).json({ message: 'Tabulação não encontrada' }); // Se não encontrado, retorna 404
+    }
+  } catch (err) {
+    console.log(err); // Loga o erro para depuração
+    res.status(500).json({ message: 'Falha no servidor' }); // Retorna um erro genérico de servidor
+  }
+});
+
+router.get('/tabulacao/usuario/:usuarioId', async (req, res) => {
+  const { usuarioId } = req.params; // Obtém o usuarioId da URL
+
+  try {
+    // Encontra todos os registros na tabela 'tabulacao' com base no usuarioId
+    const tabulacoes = await prisma.tabulacao.findMany({
+      where: { usuarioId: parseInt(usuarioId) }, // Converte usuarioId para número
+    });
+
+    if (tabulacoes.length > 0) {
+      res.status(200).json({ data: tabulacoes }); // Retorna as tabulações encontradas
+    } else {
+      res.status(404).json({ message: 'Nenhuma tabulação encontrada para esse usuário' }); // Retorna 404 se não encontrar
     }
   } catch (err) {
     console.log(err); // Loga o erro para depuração

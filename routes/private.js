@@ -1,115 +1,121 @@
-import express from 'express'
-import { PrismaClient } from '@prisma/client'
-// import { data } from "autoprefixer"
+import express from 'express';
+import { PrismaClient } from '@prisma/client';
+import auth from '../middlewares/auth.js'; // Middleware de autenticação
 
-const router = express.Router()
-const prisma = new PrismaClient()
+const router = express.Router();
+const prisma = new PrismaClient();
 
+router.get('/auth/check', auth, (req, res) => {
+  // Se o middleware `auth` passou, significa que o token é válido
+  res.status(200).json({ message: 'Autenticado', userId: req.userId });
+});
+
+// Rota para listar usuários - sem autenticação
 router.get('/listar-usuarios', async (req, res) => {
   try {
-    const users = await prisma.user.findMany()
-
-    res.status(200).json({ message: 'Usuários listados com sucesso', users })
+    const users = await prisma.user.findMany();
+    res.status(200).json({ message: 'Usuários listados com sucesso', users });
   } catch (err) {
-    console.log(err)
-    res.status(500).json({ message: 'Falha no servidor' })
+    console.error(err);
+    res.status(500).json({ message: 'Falha no servidor' });
   }
-})
+});
 
-router.get('/dashboard', async (req, res) => {
+// Rota para dashboard - autenticada
+router.get('/dashboard', auth, async (req, res) => {
   try {
-    const users = await prisma.user.findMany()
-
-    res.status(200).json({ message: 'Usuários listados com sucesso', users })
+    const users = await prisma.user.findMany();
+    res.status(200).json({ message: 'Usuários listados com sucesso', users });
   } catch (err) {
-    console.log(err)
-    res.status(500).json({ message: 'Falha no servidor' })
+    console.error(err);
+    res.status(500).json({ message: 'Falha no servidor' });
   }
-})
+});
 
-router.get('/listar-dados', async (req, res) => {
+// Rota para listar dados - autenticada
+router.get('/listar-dados', auth, async (req, res) => {
   try {
-    const data = await prisma.data.findMany()
-
-    res.status(200).json({ data })
+    const data = await prisma.data.findMany();
+    res.status(200).json({ data });
   } catch (err) {
-    console.log(err)
-    res.status(500).json({ message: 'Falha no servidor' })
+    console.error(err);
+    res.status(500).json({ message: 'Falha no servidor' });
   }
-})
+});
 
-router.post('/inserir-dados', async (req, res) => {
+// Rota para inserir dados - autenticada
+router.post('/inserir-dados', auth, async (req, res) => {
+  const { acertos, banco, comissao, proposta } = req.body;
+
   try {
-    const data = req.body
-
-    
-
     const dataDB = await prisma.data.create({
       data: {
-        acertos: data.acertos,
-        banco: data.banco,
-        comissao: data.comissao,
-        proposta: data.proposta,
-      }
-    })
-    res.status(201).json(dataDB)
+        acertos,
+        banco,
+        comissao,
+        proposta,
+      },
+    });
+    res.status(201).json(dataDB);
   } catch (err) {
-    res.status(500).json({ message: 'Erro no Servidor, tente novamente' })
+    console.error(err);
+    res.status(500).json({ message: 'Erro no Servidor, tente novamente' });
   }
-})
+});
 
-router.get('/tabulacao', async (req, res) => {
+// Rota para obter todas as tabulações - autenticada
+router.get('/tabulacao', auth, async (req, res) => {
   try {
-    const data = await prisma.tabulacao.findMany()
-
-    res.status(200).json({ data })
+    const data = await prisma.tabulacao.findMany();
+    res.status(200).json({ data });
   } catch (err) {
-    console.log(err)
-    res.status(500).json({ message: 'Falha no servidor' })
+    console.error(err);
+    res.status(500).json({ message: 'Falha no servidor' });
   }
-})
+});
 
-router.get('/tabulacao/id/:id', async (req, res) => {
-  const { id } = req.params; // Obtém o ID da URL
+// Rota para obter uma tabulação pelo ID - autenticada
+router.get('/tabulacao/id/:id', auth, async (req, res) => {
+  const { id } = req.params;
 
   try {
-    // Encontra o registro na tabela tabulacao com base no ID da tabulação
     const data = await prisma.tabulacao.findUnique({
-      where: { id: parseInt(id) }, // Converte o ID para número
+      where: { id: parseInt(id) },
     });
 
     if (data) {
-      res.status(200).json({ data }); // Se encontrado, retorna o dado
+      res.status(200).json({ data });
     } else {
-      res.status(404).json({ message: 'Tabulação não encontrada' }); // Se não encontrado, retorna 404
+      res.status(404).json({ message: 'Tabulação não encontrada' });
     }
   } catch (err) {
-    console.log(err); // Loga o erro para depuração
-    res.status(500).json({ message: 'Falha no servidor' }); // Retorna um erro genérico de servidor
+    console.error(err);
+    res.status(500).json({ message: 'Falha no servidor' });
   }
 });
 
-router.get('/tabulacao/usuario/:usuarioId', async (req, res) => {
-  const { usuarioId } = req.params; // Obtém o usuarioId da URL
+// Rota para obter tabulações de um usuário - autenticada
+router.get('/tabulacao/usuario/:usuarioId', auth, async (req, res) => {
+  const { usuarioId } = req.params;
 
   try {
-    // Encontra todos os registros na tabela 'tabulacao' com base no usuarioId
     const tabulacoes = await prisma.tabulacao.findMany({
-      where: { usuarioId: parseInt(usuarioId) }, // Converte usuarioId para número
+      where: { usuarioId: parseInt(usuarioId) },
     });
 
     if (tabulacoes.length > 0) {
-      res.status(200).json({ data: tabulacoes }); // Retorna as tabulações encontradas
+      res.status(200).json({ data: tabulacoes });
     } else {
-      res.status(404).json({ message: 'Nenhuma tabulação encontrada para esse usuário' }); // Retorna 404 se não encontrar
+      res.status(404).json({ message: 'Nenhuma tabulação encontrada para esse usuário' });
     }
   } catch (err) {
-    console.log(err); // Loga o erro para depuração
-    res.status(500).json({ message: 'Falha no servidor' }); // Retorna um erro genérico de servidor
+    console.error(err);
+    res.status(500).json({ message: 'Falha no servidor' });
   }
 });
 
-router.post('/tabulacao', async (req, res) => {
+// Rota para criar uma nova tabulação - autenticada
+router.post('/tabulacao', auth, async (req, res) => {
   const { usuarioId, data, codigo, descricao } = req.body;
 
   try {
@@ -118,8 +124,8 @@ router.post('/tabulacao', async (req, res) => {
         usuarioId,
         data: new Date(data), // Certifique-se de que a data está no formato ISO
         codigo,
-        descricao
-      }
+        descricao,
+      },
     });
 
     res.status(201).json(novaTabulacao);
@@ -129,7 +135,8 @@ router.post('/tabulacao', async (req, res) => {
   }
 });
 
-router.delete('/tabulacao/:id', async (req, res) => {
+// Rota para deletar uma tabulação - autenticada
+router.delete('/tabulacao/:id', auth, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -138,10 +145,8 @@ router.delete('/tabulacao/:id', async (req, res) => {
     });
 
     res.json({ message: 'Tabulação deletada com sucesso', tabulacao });
-
   } catch (error) {
     if (error.code === 'P2025') {
-      // P2025 é o código de erro do Prisma para "Registro não encontrado"
       res.status(404).json({ error: 'Tabulação não encontrada' });
     } else {
       console.error(error);
@@ -150,27 +155,24 @@ router.delete('/tabulacao/:id', async (req, res) => {
   }
 });
 
-router.patch('/tabulacao/:id', async (req, res) => {
+// Rota para atualizar uma tabulação - autenticada
+router.patch('/tabulacao/:id', auth, async (req, res) => {
   const { id } = req.params;
-  const updateData = req.body; 
+  const updateData = req.body;
 
   try {
-    // Valida se o corpo da requisição contém algum dado para atualização
     if (!updateData || Object.keys(updateData).length === 0) {
       return res.status(400).json({ error: 'Nenhum dado fornecido para atualização' });
     }
 
-    // Atualiza a tabulação com os dados fornecidos
     const updatedTabulacao = await prisma.tabulacao.update({
       where: { id: parseInt(id, 10) },
       data: updateData,
     });
 
     res.json({ message: 'Tabulação atualizada com sucesso', tabulacao: updatedTabulacao });
-
   } catch (error) {
     if (error.code === 'P2025') {
-      // P2025 é o código de erro do Prisma para "Registro não encontrado"
       res.status(404).json({ error: 'Tabulação não encontrada' });
     } else {
       console.error(error);
@@ -179,18 +181,34 @@ router.patch('/tabulacao/:id', async (req, res) => {
   }
 });
 
-
-router.get('/reembolso', async (req, res) => {
+// Rota para obter reembolsos - autenticada
+router.get('/reembolso', auth, async (req, res) => {
   try {
-    const data = await prisma.reembolso.findMany()
-
-    res.status(200).json({ data })
+    const data = await prisma.reembolso.findMany();
+    res.status(200).json({ data });
   } catch (err) {
-    console.log(err)
-    res.status(500).json({ message: 'Falha no servidor' })
+    console.error(err);
+    res.status(500).json({ message: 'Falha no servidor' });
   }
-})
+});
 
+// Rota de logout
+router.post('/logout', (req, res) => {
+  // Limpa o cookie de autenticação
+  res.clearCookie('token', {
+    httpOnly: true, // Garante que o cookie não pode ser acessado via JavaScript
+    secure: process.env.NODE_ENV === 'production', // Define o cookie como seguro em produção
+    sameSite: 'strict', // Protege contra CSRF
+  });
 
+  // Se houver informações de sessão, limpe também (caso esteja usando sessões)
+  // req.session.destroy(err => {
+  //   if (err) {
+  //     return res.status(500).json({ message: 'Erro ao encerrar a sessão' });
+  //   }
+  // });
 
-export default router
+  return res.status(200).json({ message: 'Logout bem-sucedido' });
+});
+
+export default router;

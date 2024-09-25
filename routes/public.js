@@ -1,16 +1,15 @@
-import express from 'express'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
+import express from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+import auth from '../middlewares/auth.js'; // Certifique-se de importar o middleware de autenticação
 
-import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient();
+const router = express.Router();
 
-const prisma = new PrismaClient()
-const router = express.Router()
-
-const JWT_SECRET = process.env.JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Cadastro
-
 router.post('/cadastro', async (req, res) => {
   try {
     const { name, email, departament, password } = req.body;
@@ -49,7 +48,6 @@ router.post('/cadastro', async (req, res) => {
   }
 });
 
-
 // Login
 router.post('/login', async (req, res) => {
   try {
@@ -79,6 +77,14 @@ router.post('/login', async (req, res) => {
     // Gera o Token JWT
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1d' });
 
+    // Define o cookie do token JWT
+    res.cookie('token', token, {
+      httpOnly: true, // O cookie só pode ser acessado pelo HTTP, não via JavaScript
+      secure: process.env.NODE_ENV === 'production', // Define como 'true' em produção para HTTPS
+      sameSite: 'Strict', // Evita o envio do cookie em requisições cross-site
+      maxAge: 24 * 60 * 60 * 1000, // Cookie expira em 1 dia
+    });
+
     // Busca os detalhes completos do usuário, incluindo tabulações
     const userById = await prisma.user.findUnique({
       where: { id: user.id },
@@ -91,9 +97,8 @@ router.post('/login', async (req, res) => {
       },
     });
 
-    // Envia os dados de forma estruturada para o frontend, junto com o token
+    // Envia os dados do usuário (sem o token) para o frontend
     return res.status(200).json({
-      token, // Token JWT
       user: {
         id: userById.id,
         name: userById.name,
@@ -108,4 +113,8 @@ router.post('/login', async (req, res) => {
   }
 });
 
-export default router
+
+// Rota para verificar a autenticação (privada)
+
+
+export default router;

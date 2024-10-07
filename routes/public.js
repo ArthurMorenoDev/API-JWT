@@ -49,6 +49,8 @@ router.post('/cadastro', async (req, res) => {
 });
 
 // Login
+
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -77,14 +79,6 @@ router.post('/login', async (req, res) => {
     // Gera o Token JWT
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1d' });
 
-    // Define o cookie do token JWT
-    res.cookie('token', token, {
-      httpOnly: true, // O cookie só pode ser acessado pelo HTTP, não via JavaScript
-      secure: process.env.NODE_ENV === 'production', // Define como 'true' em produção para HTTPS
-      sameSite: 'Strict', // Evita o envio do cookie em requisições cross-site
-      maxAge: 24 * 60 * 60 * 1000, // Cookie expira em 1 dia
-    });
-
     // Busca os detalhes completos do usuário, incluindo tabulações
     const userById = await prisma.user.findUnique({
       where: { id: user.id },
@@ -97,8 +91,9 @@ router.post('/login', async (req, res) => {
       },
     });
 
-    // Envia os dados do usuário (sem o token) para o frontend
+    // Envia o token e os dados do usuário (sem o token) para o frontend
     return res.status(200).json({
+      token, // Envia o token JWT diretamente para ser armazenado no localStorage pelo front-end
       user: {
         id: userById.id,
         name: userById.name,

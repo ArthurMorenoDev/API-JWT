@@ -9,8 +9,8 @@ const app = express();
 
 // Configuração do CORS
 const corsOptions = {
-  origin: 'http://localhost:5173', // Frontend permitido
-  credentials: true, // Permitir envio de credenciais (cookies, headers de autenticação)
+  origin: ['http://172.25.10.4:3960','http://191.233.254.11:3960','http://localhost:5173'],  // Frontend permitido
+  credentials: false, // Permitir envio de credenciais (cookies, headers de autenticação)
 };
 
 // Middleware de parse de JSON e cookies
@@ -23,6 +23,12 @@ app.use('/', publicRoutes);
 
 // Rotas privadas (uso do middleware de autenticação)
 app.use('/', auth, privateRoutes);
+
+// Middleware de tratamento de erros
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Algo deu errado!');
+});
 
 // Inicializa o servidor na porta 3000
 app.listen(3000, () => {

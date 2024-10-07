@@ -192,6 +192,47 @@ router.get('/reembolso', auth, async (req, res) => {
   }
 });
 
+router.post('/reembolso', auth, async (req, res) => {
+  const { usuario_solicitante, dataInicio, dataFim, tipoRota, observacao } = req.body;
+
+  // Validação dos dados recebidos
+  if (!usuario_solicitante || !dataInicio || !dataFim || !tipoRota) {
+    return res.status(400).json({ message: 'Dados obrigatórios não fornecidos.' });
+  }
+
+  try {
+    // Converter as strings de data para objetos Date
+    const startDate = new Date(dataInicio);
+    const endDate = new Date(dataFim);
+
+    // Verificar se as datas são válidas
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res.status(400).json({ message: 'Datas inválidas fornecidas.' });
+    }
+
+    // Criar uma nova entrada no banco de dados
+    const newReembolso = await prisma.reembolso.create({
+      data: {
+        usuario_solicitante,
+        data_incio: startDate, // Passar a data como objeto Date
+        data_fim: endDate,     // Passar a data como objeto Date
+        tipo_rota: tipoRota,
+        obs: observacao,
+        status: 'Pendente', // Definindo um status padrão, pode ser alterado conforme necessário
+        valor: 0, // Inicializando valor como 0 ou pode ser alterado conforme necessário
+        data_aprovacao_regional: null, // Inicializando como null
+        data_aprovacao_financeiro: null, // Inicializando como null
+        data_credito: null, // Inicializando como null
+      },
+    });
+
+    res.status(201).json({ message: 'Reembolso criado com sucesso', data: newReembolso });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Falha ao criar o reembolso' });
+  }
+});
+
 // Rota de logout
 router.post('/logout', (req, res) => {
   // Limpa o cookie de autenticação

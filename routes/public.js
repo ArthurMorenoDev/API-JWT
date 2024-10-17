@@ -77,7 +77,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Gera o Token JWT
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '5h' });
 
     // Busca os detalhes completos do usuário, incluindo tabulações
     const userById = await prisma.user.findUnique({

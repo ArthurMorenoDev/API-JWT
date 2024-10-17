@@ -193,7 +193,7 @@ router.get('/reembolso', auth, async (req, res) => {
 });
 
 router.post('/reembolso', auth, async (req, res) => {
-  const { usuario_solicitante, dataInicio, dataFim, tipoRota, observacao } = req.body;
+  const { usuario_solicitante, dataInicio, dataFim, tipoRota, observacao, valor } = req.body;
 
   // Validação dos dados recebidos
   if (!usuario_solicitante || !dataInicio || !dataFim || !tipoRota) {
@@ -219,7 +219,7 @@ router.post('/reembolso', auth, async (req, res) => {
         tipo_rota: tipoRota,
         obs: observacao,
         status: 'Pendente', // Definindo um status padrão, pode ser alterado conforme necessário
-        valor: 0, // Inicializando valor como 0 ou pode ser alterado conforme necessário
+        valor: valor, // Inicializando valor como 0 ou pode ser alterado conforme necessário
         data_aprovacao_regional: null, // Inicializando como null
         data_aprovacao_financeiro: null, // Inicializando como null
         data_credito: null, // Inicializando como null
